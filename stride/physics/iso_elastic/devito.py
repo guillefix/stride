@@ -23,6 +23,7 @@ from .. import boundaries
 # from .examples.seismic.source import WaveletSource, RickerSource, GaborSource, TimeAxis
 from devito import SpaceDimension, Constant, VectorTimeFunction, TensorTimeFunction, TimeFunction
 from ..common.source import WaveletSource, RickerSource, GaborSource, TimeAxis
+from ..boundaries import boundaries_registry
 
 
 __all__ = ['IsoElasticDevito']
@@ -46,6 +47,7 @@ class IsoElasticDevito(ProblemTypeBase):
 
         self.undersampling_factor = 4
 
+        self.boundary_type = 'sponge_boundary_1'
         self.interpolation_type = 'linear'
 
         dev_grid = kwargs.pop('dev_grid', None)
@@ -103,6 +105,10 @@ class IsoElasticDevito(ProblemTypeBase):
         self.dt = dt = self.time.step
         print(f"dt: {dt}")
         print(f"End time: {self.time.stop}")
+
+        # Absorbing boundaries
+        self.boundary = boundaries_registry[self.boundary_type](self.dev_grid)
+        _, _, _ = self.boundary.apply(vel, vp.extended_data)
 
         # Now we create the velocity and pressure fields
 

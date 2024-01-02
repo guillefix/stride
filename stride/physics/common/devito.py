@@ -481,7 +481,80 @@ class GridDevito(Gridded):
 
         space_dims = fun.dimensions[1:]
 
-        return fun.func(time_under - int(bounds[0] // factor), *space_dims)
+        # return fun.func(time_under - int(bounds[0] // factor), *space_dims)
+        return fun
+
+    @_cached
+    def undersampled_tensor_time_function(self, name, factor, bounds=None, space_order=None, time_order=None, **kwargs):
+        """
+        Create an undersampled version of a Devito function with parameters provided.
+
+        Parameters
+        ----------
+        name : str
+            Name of the function.
+        factor : int
+            Undersampling factor.
+        bounds : tuple, optional
+            Timestep bounds in which the function is sampled, defaults to all timesteps.
+        space_order : int, optional
+            Space order of the discretisation, defaults to the grid space order.
+        time_order : int, optional
+            Time order of the discretisation, defaults to the grid time order.
+        kwargs
+            Additional arguments for the Devito constructor.
+
+        Returns
+        -------
+        devito.Function
+            Generated function.
+
+        """
+        bounds = bounds or (0, self.time.extended_num-1)
+
+        time_under, buffer_size = self._time_undersampled('time_under', factor, bounds)
+
+        compression = kwargs.pop('compression', None)
+
+        fun = self.tensor_time_function(name,
+                                 space_order=space_order,
+                                 time_order=time_order,
+                                 time_dim=time_under,
+                                 save=buffer_size,
+                                 dtype=kwargs.pop('dtype', self.dtype),
+                                 compression=compression,
+                                 **kwargs)
+
+        # dims = np.array(fun.dimensions)
+        # for i,d in enumerate(fun.dimensions):
+        #     print(d)
+        #     print(d[0])
+        #     print(d[1])
+            # dims.append((d[0] - int(bounds[0]//factor),) + d[1:])
+        # dims.fill([x for x in (fun.dimensions[0][0] - int(bounds[0]//factor),) + fun.dimensions[0][1:]])
+        # dims = np.array(dims.tolist())
+        
+
+        # import pdb; pdb.set_trace()
+        # return fun.func(dims.tolist())
+
+        # return fun.func([time_under - int(bounds[0] // factor)]+space_dims)
+        # TODO: fix
+        # return funyy
+
+        space_dims = fun[0].dimensions[1:]
+        xx = fun[0].func(time_under - int(bounds[0] // factor), *space_dims)
+        space_dims = fun[1].dimensions[1:]
+        xy = fun[1].func(time_under - int(bounds[0] // factor), *space_dims)
+        space_dims = fun[2].dimensions[1:]
+        yx = fun[2].func(time_under - int(bounds[0] // factor), *space_dims)
+        space_dims = fun[3].dimensions[1:]
+        yy = fun[3].func(time_under - int(bounds[0] // factor), *space_dims)
+        # import pdb; pdb.set_trace()
+        # return devito.TensorTimeFunction([[xx,xy],[yx,yy]])
+        return fun
+
+
 
     def undersampled_time_derivative(self, fun, factor, bounds=None, offset=None,
                                      deriv_order=1, fd_order=1):
@@ -904,6 +977,7 @@ class OperatorDevito:
             logger.perf('\t * %s=%s' % (key, value))
 
         with devito.switchconfig(**self.devito_context):
+            # import pdb; pdb.set_trace()
             self.devito_operator = devito.Operator(op, **compiler_config)
 
     def compile(self):

@@ -122,3 +122,8 @@ stride_examples/*/*.png
 
 # Legacy code
 legacy/
+
+##
+stride/physics/iso_elastic/devito_old.py
+stride/physics/iso_elastic/devito_old2.py
+stride/physics/iso_elastic/devito_old3.py

@@ -1,0 +1,25 @@
+name: stride
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8, <3.12
+  - blosc
+  - cached-property
+  - click
+  - cloudpickle>=1.6
+  - cython
+  - dash>=2.0.0
+  - flake8
+  - gputil
+  - h5py>=3.2
+  - matplotlib>=3.4
+  - multiprocess
+  - nbval
+  - numpy>=1.20
+  - notebook>=6.4
+  - pip
+  - pre-commit>=2.13
+  - psutil
+  - pyface
+  - pyflakes

@@ -1179,6 +1179,7 @@ class IsoAcousticDevito(ProblemTypeBase):
 
         # Set up the boundary
         boundary_field = laplacian if self.kernel != 'OT2' and 'PML' in self.boundary_type else field
+        # print(boundary_field)
         boundary_term, eq_before, eq_after = self.boundary.apply(boundary_field, vp.extended_data,
                                                                  direction=direction, subs=subs,
                                                                  f_centre=self._bandwidth[1])

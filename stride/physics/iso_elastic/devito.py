@@ -106,9 +106,6 @@ class IsoElasticDevito(ProblemTypeBase):
         print(f"dt: {dt}")
         print(f"End time: {self.time.stop}")
 
-        # Absorbing boundaries
-        self.boundary = boundaries_registry[self.boundary_type](self.dev_grid)
-        _, _, _ = self.boundary.apply(vel, vp.extended_data)
 
         # Now we create the velocity and pressure fields
 
@@ -117,6 +114,11 @@ class IsoElasticDevito(ProblemTypeBase):
         self.v = v = self.dev_grid.vector_time_function('v', coefficients='standard')
         self.tau = tau = self.dev_grid.tensor_time_function('tau', coefficients='standard')
         # self.tau = tau = TensorTimeFunction(name='t', grid=self.dev_grid.devito_grid, space_order=self.space_order, time_order=1, save=self.time.num)
+
+        # Absorbing boundaries
+        self.boundary = boundaries_registry[self.boundary_type](self.dev_grid)
+        boundary_term, eq_before, eq_after = self.boundary.apply(v, vp.extended_data)
+        #TODO: fix the boundary layer, and add it to the operator
 
         # self.p_saved = p_saved = TimeFunction(name='p_saved', grid=self.dev_grid.devito_grid, space_order=self.space_order, time_order=self.time_order, save=self.time.num)
 
@@ -179,7 +181,7 @@ class IsoElasticDevito(ProblemTypeBase):
         kwargs['devito_config'] = kwargs.get('devito_config', {})
         kwargs['devito_config']['devicecreate'] = devicecreate
 
-        self.state_operator.set_operator([u_v] + [u_t]  + src_xx + src_zz + update_saved,
+        self.state_operator.set_operator(eq_before + [u_v] + [u_t] + eq_after + src_xx + src_zz + update_saved,
                                             **kwargs)
         self.state_operator.compile()
 

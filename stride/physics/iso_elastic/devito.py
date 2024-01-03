@@ -100,8 +100,6 @@ class IsoElasticDevito(ProblemTypeBase):
         # p_saved_expr = self._forward_save(p)
         # nani is the above for?
 
-        # t0, tn = 0., 0.00005
-        # self.dt = dt = 0.00000002
         self.dt = dt = self.time.step
         print(f"dt: {dt}")
         print(f"End time: {self.time.stop}")
@@ -131,7 +129,9 @@ class IsoElasticDevito(ProblemTypeBase):
         # Prepare the subdomains
         abox, full, interior, boundary = self._subdomains()
 
-        update_saved = [devito.Eq(p_saved, tau[0], subdomain=abox)]
+        n = self.space.dim
+
+        update_saved = [devito.Eq(p_saved, np.sum([tau[i,i] for i in range(n)])/n, subdomain=abox)]
         # update_saved = []
         devicecreate = (self.dev_grid.vars.tau, self.dev_grid.vars.p_saved,)
 
